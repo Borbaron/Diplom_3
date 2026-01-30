@@ -42,9 +42,7 @@ class TestOrder:
         base_page.wait_for_overlay_to_disappear(OrderLocators.OVERLAY)
         initial_count = 0 
         base_page.drag_and_drop(OrderLocators.INGREDIENT_SAUCE, OrderLocators.CONSTRUCTOR_DROP) 
-        try:
-            final_count_element = base_page.wait_for_element(OrderLocators.INGREDIENT_COUNTER, timeout=5)
-            final_count = int(final_count_element.text)
-            assert final_count == initial_count + 1, f"Expected counter to be 1, but got {final_count}"
-        except TimeoutException:
-            pytest.fail("Counter did not appear after adding ingredient.")
+        final_count_element = base_page.wait_for_element(OrderLocators.INGREDIENT_COUNTER, timeout=5)
+        final_count = int(final_count_element.text)
+        assert final_count == initial_count + 1, f"Expected counter to be 1, but got {final_count}"
+

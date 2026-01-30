@@ -1,28 +1,41 @@
 import pytest
 import requests
+import os
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 from data import Credentials
 from pages.login_page import LoginPage
-
+from locators.main_locators import OrderLocators
 
 from curl import *
 
 
-@pytest.fixture(params=["firefox", "chrome"], scope="function")
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser",
+        action="store",
+        default="chrome",
+        help="Браузер для тестов: chrome или firefox",
+        choices=["chrome", "firefox"]
+    )
+
+@pytest.fixture(scope="function")
 def driver(request):
-    if request.param == "firefox":
+    browser_name = request.config.getoption("--browser")
+    
+    if browser_name == "firefox":
         driver = webdriver.Firefox()
-    elif request.param == "chrome":
+    elif browser_name == "chrome":
         options = webdriver.ChromeOptions()
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        driver = webdriver.Chrome()
+        driver = webdriver.Chrome(options=options)
+    else:
+        raise ValueError(f"Неподдерживаемый браузер: {browser_name}")
     
     driver.get(main_site)
     yield driver
     driver.quit()
+
 
 @pytest.fixture
 def login_user(driver):
@@ -32,16 +45,11 @@ def login_user(driver):
     from selenium.webdriver.support import expected_conditions as EC
     
     login_page = LoginPage(driver)
-    
-    # Открываем страницу логина
     login_page.open_login_page()
-    
-    # Выполняем логин
     login_page.login(Credentials.email, Credentials.password)
     
-    # Ждем кнопку "Оформить заказ" с увеличенным таймаутом
     WebDriverWait(driver, 20).until(
-        EC.presence_of_element_located((By.XPATH, "//button[text()='Оформить заказ']"))
+        EC.presence_of_element_located(OrderLocators.ORDER_BUTTON)
     )
     
     return login_page

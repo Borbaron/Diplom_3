@@ -28,35 +28,26 @@ class BasePage:
         """Перетаскивает элемент из source_locator в target_locator с помощью JavaScript."""
         source = self.wait_for_element(source_locator)
         target = self.wait_for_element(target_locator)
-
         self.driver.execute_script("""
         function createEvent(typeOfEvent) {
             var event = document.createEvent("CustomEvent");
             event.initCustomEvent(typeOfEvent, true, true, null);
             return event;
         }
-
         var source = arguments[0];
         var target = arguments[1];
-
         var dragStartEvent = createEvent('dragstart');
         source.dispatchEvent(dragStartEvent);
-
         var dragEnterEvent = createEvent('dragenter');
         target.dispatchEvent(dragEnterEvent);
-
         var dragOverEvent = createEvent('dragover');
         dragOverEvent.preventDefault = function () { };
         target.dispatchEvent(dragOverEvent);
-
         var dropEvent = createEvent('drop');
         target.dispatchEvent(dropEvent);
-
         var dragEndEvent = createEvent('dragend');
         source.dispatchEvent(dragEndEvent);
         """, source, target)
-
-
 
     @allure.step("Получить текст элемента c локатором: {locator}")
     def get_text_on_element(self, locator, timeout=20):
@@ -69,6 +60,7 @@ class BasePage:
             EC.invisibility_of_element_located(locator)
         )
 
+    @allure.step("Ожидание, пока элемент станет кликабельным")
     def wait_for_element_to_be_clickable(self, locator, timeout=20):
         WebDriverWait(self.driver, timeout).until(
             EC.element_to_be_clickable(locator)
@@ -83,3 +75,17 @@ class BasePage:
         WebDriverWait(self.driver, timeout).until(
             lambda driver: driver.execute_script("return document.readyState") == "complete"
         )
+
+    @allure.step("Открыть URL: {url}")
+    def open_url(self, url):
+        self.driver.get(url)
+
+    @allure.step("Ожидание исчезновения элемента")
+    def wait_for_element_to_disappear(self, locator, timeout=20):
+        """Ждет, пока элемент с заданным локатором  не исчезнет."""
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.invisibility_of_element_located(locator)
+            )
+        except TimeoutException:
+            raise TimeoutException(f"Не дождались исчезновения элемента за {timeout} секунд")
