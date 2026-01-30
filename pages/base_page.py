@@ -81,8 +81,7 @@ class BasePage:
         self.driver.get(url)
 
     @allure.step("Ожидание исчезновения элемента")
-    def wait_for_element_to_disappear(self, locator, timeout=20):
-        """Ждет, пока элемент с заданным локатором  не исчезнет."""
+    def wait_for_element_to_disappear(self, locator, timeout=5):
         try:
             WebDriverWait(self.driver, timeout).until(
                 EC.invisibility_of_element_located(locator)
